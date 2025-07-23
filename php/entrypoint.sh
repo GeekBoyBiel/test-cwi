@@ -17,10 +17,8 @@ if [ ! -f .env ]; then
 fi
 
 # Instala dependências se vendor não existir
-if [ ! -d vendor ] || [ ! -f vendor/autoload.php ]; then
-  echo "📦 Instalando dependências Composer..."
-  composer install --no-interaction --ansi || exit 1
-fi
+echo "📦 Instalando dependências Composer (forçado)..."
+composer install --no-interaction --ansi || exit 1
 
 # Limpa caches e descobre pacotes
 echo "🚀 Limpando e descobrindo pacotes..."
@@ -32,6 +30,11 @@ php artisan package:discover --ansi || true
 
 # Corrige permissões do Laravel
 chmod -R 775 bootstrap/cache || true
+
+mkdir -p storage/framework/{views,sessions,cache}
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+
 
 # Sobe o servidor Laravel (modo dev)
 echo "✅ Aplicação pronta. Servidor rodando em 0.0.0.0:8000"
