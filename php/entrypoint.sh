@@ -1,23 +1,38 @@
 #!/usr/bin/env bash
 set -e
 
-while ! bash -c ">/dev/tcp/$DB_HOST/$DB_PORT"; do sleep 0.2; done
+cd /var/www/html
 
-# cria o .env e app_key
-if [ ! -f /var/www/html/.env ]; then
-  cp /var/www/html/.env.example /var/www/html/.env
-  php artisan key:generate --force
+# Aguarda o banco ficar disponível
+echo "⏳ Aguardando conexão com o banco de dados $DB_HOST:$DB_PORT..."
+while ! bash -c ">/dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; do
+  sleep 0.2
+done
+
+# Cria o .env e gera app_key
+if [ ! -f .env ]; then
+  echo "⚙️  Criando arquivo .env e gerando APP_KEY..."
+  cp .env.example .env
+  php artisan key:generate --force || true
 fi
 
-# instala dependências
-if [ ! -d /var/www/html/vendor ] || [ ! -f /var/www/html/vendor/autoload.php ]; then
-  echo "📦 Instalando dependências Composer (runtime)..."
-  composer install --no-dev --optimize-autoloader --working-dir=/var/www/html
+# Instala dependências se vendor não existir
+if [ ! -d vendor ] || [ ! -f vendor/autoload.php ]; then
+  echo "📦 Instalando dependências Composer..."
+  composer install --no-interaction --ansi || exit 1
 fi
 
-# novos pacotes e clear cache
-php artisan package:discover --ansi || exit 1
-php artisan config:clear
+# Limpa caches e descobre pacotes
+echo "🚀 Limpando e descobrindo pacotes..."
+php artisan config:clear || true
+php artisan cache:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
+php artisan package:discover --ansi || true
 
-# sobe o servidor Laravel
+# Corrige permissões do Laravel
+chmod -R 775 bootstrap/cache || true
+
+# Sobe o servidor Laravel (modo dev)
+echo "✅ Aplicação pronta. Servidor rodando em 0.0.0.0:8000"
 exec php artisan serve --host=0.0.0.0 --port=8000

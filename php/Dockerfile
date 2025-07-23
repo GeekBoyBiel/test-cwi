@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-# Instala dependências do sistema e extensões do PHP
+# Instala dependências de sistema
 RUN apt-get update \
  && apt-get install -y libpq-dev zip unzip git curl dos2unix \
  && docker-php-ext-install pdo pdo_pgsql
@@ -8,19 +8,16 @@ RUN apt-get update \
 # Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Define diretório
+# Define o diretório da aplicação
 WORKDIR /var/www/html
 
-# Copia o projeto antes de rodar o composer
+# Copia todos os arquivos da aplicação
 COPY . .
 
-# Instala dependências do PHP
-RUN composer install --prefer-dist --classmap-authoritative
-
-# Copia entrypoint (libera permissao, erro do windowns acho)
+# Copia e prepara o entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN dos2unix /usr/local/bin/entrypoint.sh \
- && chmod +x /usr/local/bin/entrypoint.sh
+RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
-ENTRYPOINT ["entrypoint.sh"]
+# Define o entrypoint e comando padrão
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php-fpm"]
