@@ -32,8 +32,8 @@ Este repositório é um teste técnico para vaga de backend da CWI utilizando **
 1. **Clone o repositório**
 
 ```bash
-git clone https://github.com/GeekBoyBiel/cwi-test.git
-cd cwi-test
+git clone https://github.com/GeekBoyBiel/test-cwi.git
+cd test-cwi
 ```
 
 2. **Crie o arquivo `.env` a partir do `.env.example`**
