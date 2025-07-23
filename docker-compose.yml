@@ -13,34 +13,43 @@ services:
     ports:
       - "5432:5432"
 
+  node:
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    container_name: cwi-node
+    depends_on:
+      - postgres
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./node:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    environment:
+      PORT: 3001
+
   php:
     build:
       context: ./php
+      dockerfile: Dockerfile
     container_name: cwi-php
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./php:/var/www/html
     depends_on:
       - postgres
+      - node
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+    volumes:
+      - ./php:/var/www/html
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_DATABASE: ${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      EXTERNAL_API_URL: http://node:3001
-
-  node:
-    build:
-      context: ./node
-    container_name: cwi-node
+      EXTERNAL_API_URL: ${EXTERNAL_API_URL}
     ports:
-      - "3001:3001"
-    volumes:
-      - ./node:/usr/src/app
-    environment:
-      PORT: 3001
+      - "8000:8000"
 
 volumes:
   pgdata:
+  node_modules:
+

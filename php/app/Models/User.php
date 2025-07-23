@@ -9,11 +9,7 @@ class User extends Authenticatable
 {
     use HasFactory;
 
-    public $incrementing = false; 
-    protected $keyType = 'string';
-
     protected $fillable = [
-        'id',
         'name',
         'email',
         'password',
@@ -27,15 +23,4 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) \Illuminate\Support\Str::uuid();
-            }
-        });
-    }
 }

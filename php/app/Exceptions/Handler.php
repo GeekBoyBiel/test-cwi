@@ -7,20 +7,15 @@ use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    // Exceptions not reported
-    protected $dontReport = [
-        //
-    ];
+    protected $dontReport = [];
 
-    // Inputs not included in validation errors
     protected $dontFlash = [
         'current_password',
         'password',
         'password_confirmation',
     ];
 
-    // Register error handling callbacks
-    public function register()
+    public function register(): void
     {
         $this->reportable(function (Throwable $e) {
             //

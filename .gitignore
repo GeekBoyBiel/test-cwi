@@ -1,0 +1,28 @@
+# Ignora arquivos de ambiente
+.env
+
+# Ignora dependências PHP
+php/vendor/
+php/composer.lock
+
+# Ignora dependências Node.js
+node/node_modules/
+
+# Ignora arquivos de cache e logs do Laravel
+php/storage/
+php/bootstrap/cache/
+
+# Ignora arquivos de logs gerais
+*.log
+
+# Ignora IDEs
+.vscode/
+.idea/
+
+# Ignora arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Docker volumes se houverem gerados localmente
+pgdata/
+node_modules/

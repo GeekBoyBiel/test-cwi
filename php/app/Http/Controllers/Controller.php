@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Specialtactics\L5Api\Http\Controllers\RestfulController as BaseController;
+use Illuminate\Routing\Controller as BaseController;
 
 abstract class Controller extends BaseController
 {
+    //
 }
