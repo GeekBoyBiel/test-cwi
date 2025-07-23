@@ -1,0 +1,10 @@
+{
+  "message": "Welcome CWI team!",
+  "employees": [
+    { "id": 1, "name": "Gabriel Rodrigues", "role": "New CWI Developer :P" },
+    { "id": 2, "name": "Mayara Abreu Rodrigues", "role": "Project Manager" },
+    { "id": 3, "name": "João dos SAntos", "role": "Senior Backend Engineer" },
+    { "id": 4, "name": "Maria Joaquina", "role": "Junior Backend" },
+    { "id": 5, "name": "Thais Carolina", "role": "Comercial TI" }
+  ]
+}
