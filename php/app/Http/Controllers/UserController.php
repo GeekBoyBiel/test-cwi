@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -52,7 +53,7 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/users",
+     *     path="/api/user",
      *     summary="Criar novo usuário",
      *     tags={"Usuários"},
      *     @OA\RequestBody(
@@ -80,9 +81,13 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
+        ], [
+            'email.unique' => 'Este e-mail já está em uso.',
+            'name.required' => 'O nome é obrigatório.',
+            'password.min' => 'A senha deve ter no mínimo 6 caracteres.'
         ]);
 
-        $data['password'] = bcrypt($data['password']);
+        $data['password'] = Hash::make($data['password']);
 
         $user = User::create($data);
 
@@ -126,10 +131,13 @@ class UserController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:users,email,' . $id,
             'password' => 'sometimes|required|string|min:6',
+        ], [
+            'email.unique' => 'Este e-mail já está em uso.',
+            'password.min' => 'A senha deve ter no mínimo 6 caracteres.'
         ]);
 
         if (isset($data['password'])) {
-            $data['password'] = bcrypt($data['password']);
+            $data['password'] = Hash::make($data['password']);
         }
 
         $user->update($data);

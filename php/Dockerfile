@@ -20,4 +20,4 @@ RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.
 
 # Define o entrypoint e comando padrão
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["php-fpm"]
+

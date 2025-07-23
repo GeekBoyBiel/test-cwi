@@ -16,7 +16,14 @@ if [ ! -f .env ]; then
   php artisan key:generate --force || true
 fi
 
-# Instala dependências se vendor não existir
+# Cria diretório necessário para o autoload do Laravel
+mkdir -p bootstrap/cache
+
+# Corrige permissões
+chmod -R 775 bootstrap/cache
+chown -R www-data:www-data bootstrap/cache
+
+# Instala dependências
 echo "📦 Instalando dependências Composer (forçado)..."
 composer install --no-interaction --ansi || exit 1
 
@@ -28,14 +35,11 @@ php artisan route:clear || true
 php artisan view:clear || true
 php artisan package:discover --ansi || true
 
-# Corrige permissões do Laravel
-chmod -R 775 bootstrap/cache || true
-
+# Corrige permissões gerais do Laravel
 mkdir -p storage/framework/{views,sessions,cache}
 chmod -R 775 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-
-# Sobe o servidor Laravel (modo dev)
+# Sobe o servidor Laravel
 echo "✅ Aplicação pronta. Servidor rodando em 0.0.0.0:8000"
 exec php artisan serve --host=0.0.0.0 --port=8000
