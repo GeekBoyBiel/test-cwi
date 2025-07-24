@@ -48,10 +48,10 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
-4. **Execute as migrations e o seeder para popular o banco de dados**
+4. **Execute as migrations e o seeder para popular o banco de dados somente para dev**
 
 ```bash
-docker exec -it cwi-php php artisan migrate --seed
+docker exec -it cwi-php php artisan migrate:fresh --seed
 ```
 
 5. **Gere a documentação via Swagger da API (já liberado CORS para realizar teste)**

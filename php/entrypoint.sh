@@ -3,31 +3,38 @@ set -e
 
 cd /var/www/html
 
-# Aguarda o banco ficar disponível
 echo "⏳ Aguardando conexão com o banco de dados $DB_HOST:$DB_PORT..."
-while ! bash -c ">/dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; do
+while ! nc -z "$DB_HOST" "$DB_PORT"; do
   sleep 0.2
 done
+echo "✅ Banco disponível!"
 
-# Cria o .env e gera app_key
+# Garante que o .env existe
 if [ ! -f .env ]; then
-  echo "⚙️  Criando arquivo .env e gerando APP_KEY..."
+  echo "⚙️  Criando arquivo .env..."
   cp .env.example .env
-  php artisan key:generate --force || true
 fi
 
-# Cria diretório necessário para o autoload do Laravel
-mkdir -p bootstrap/cache
-
-# Corrige permissões
-chmod -R 775 bootstrap/cache
-chown -R www-data:www-data bootstrap/cache
-
 # Instala dependências
-echo "📦 Instalando dependências Composer (forçado)..."
-composer install --no-interaction --ansi || exit 1
+if [ ! -d vendor ]; then
+  echo "📦 Instalando dependências do Composer..."
+  composer install --no-interaction --prefer-dist --ansi
+else
+  echo "📦 Dependências já instaladas."
+fi
 
-# Limpa caches e descobre pacotes
+# Gera APP_KEY se necessário
+if grep -q "^APP_KEY=$" .env || ! grep -q "^APP_KEY=" .env; then
+  echo "🔐 Gerando APP_KEY..."
+  php artisan key:generate --ansi --force
+fi
+
+# Cria diretórios e permissões
+mkdir -p bootstrap/cache storage/framework/{views,sessions,cache}
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+
+# Limpa caches
 echo "🚀 Limpando e descobrindo pacotes..."
 php artisan config:clear || true
 php artisan cache:clear || true
@@ -35,10 +42,25 @@ php artisan route:clear || true
 php artisan view:clear || true
 php artisan package:discover --ansi || true
 
-# Corrige permissões gerais do Laravel
-mkdir -p storage/framework/{views,sessions,cache}
-chmod -R 775 storage bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache
+# Verifica chave
+if grep -q "^APP_KEY=$" .env; then
+  echo "❌ APP_KEY ainda está vazia! Abortando..."
+  exit 1
+fi
+
+# Executa migrations e seed
+echo "🧩 Executando migrations e seed..."
+php artisan migrate:fresh --seed || {
+  echo "❌ Falha nas migrations/seed."
+  exit 1
+}
+
+# Gera documentação Swagger
+echo "📚 Gerando documentação Swagger..."
+php artisan l5-swagger:generate || {
+  echo "❌ Falha ao gerar Swagger."
+  exit 1
+}
 
 # Sobe o servidor Laravel
 echo "✅ Aplicação pronta. Servidor rodando em 0.0.0.0:8000"

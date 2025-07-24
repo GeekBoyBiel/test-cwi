@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -15,7 +14,17 @@ class UserController extends Controller
      *     tags={"Usuários"},
      *     @OA\Response(
      *         response=200,
-     *         description="Lista de usuários retornada com sucesso"
+     *         description="Lista de usuários retornada com sucesso",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Gabriel Rodrigues"),
+     *                 @OA\Property(property="email", type="string", example="gabriel.r.s@outlook.com"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
      *     )
      * )
      */
@@ -38,12 +47,16 @@ class UserController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Usuário encontrado com sucesso"
+     *         description="Usuário encontrado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string", example="Gabriel Rodrigues"),
+     *             @OA\Property(property="email", type="string", example="gabriel.r.s@outlook.com"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *         )
      *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Usuário não encontrado"
-     *     )
+     *     @OA\Response(response=404, description="Usuário não encontrado")
      * )
      */
     public function show($id)
@@ -53,26 +66,31 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/user",
+     *     path="/users",
      *     summary="Criar novo usuário",
      *     tags={"Usuários"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name","email","password"},
-     *             @OA\Property(property="name", type="string", example="João Silva"),
-     *             @OA\Property(property="email", type="string", format="email", example="joao@email.com"),
+     *             required={"name", "email", "password"},
+     *             @OA\Property(property="name", type="string", example="Gabriel Rodrigues"),
+     *             @OA\Property(property="email", type="string", format="email", example="gabriel.r.s@outlook.com"),
      *             @OA\Property(property="password", type="string", format="password", example="123456")
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Usuário criado com sucesso"
+     *         description="Usuário criado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string", example="Gabriel Rodrigues"),
+     *             @OA\Property(property="email", type="string", example="gabriel.r.s@outlook.com"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *         )
      *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Dados inválidos"
-     *     )
+     *     @OA\Response(response=422, description="Erro de validação"),
+     *     @OA\Response(response=500, description="Erro interno")
      * )
      */
     public function store(Request $request)
@@ -81,13 +99,9 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-        ], [
-            'email.unique' => 'Este e-mail já está em uso.',
-            'name.required' => 'O nome é obrigatório.',
-            'password.min' => 'A senha deve ter no mínimo 6 caracteres.'
         ]);
 
-        $data['password'] = Hash::make($data['password']);
+        $data['password'] = bcrypt($data['password']);
 
         $user = User::create($data);
 
@@ -108,9 +122,9 @@ class UserController extends Controller
      *     ),
      *     @OA\RequestBody(
      *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string", example="Maria Silva"),
-     *             @OA\Property(property="email", type="string", example="maria@email.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="654321")
+     *             @OA\Property(property="name", type="string", example="Gabriel Rodrigues"),
+     *             @OA\Property(property="email", type="string", example="gabriel.r.s@outlook.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="novaSenha123")
      *         )
      *     ),
      *     @OA\Response(
@@ -131,13 +145,10 @@ class UserController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:users,email,' . $id,
             'password' => 'sometimes|required|string|min:6',
-        ], [
-            'email.unique' => 'Este e-mail já está em uso.',
-            'password.min' => 'A senha deve ter no mínimo 6 caracteres.'
         ]);
 
         if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
+            $data['password'] = bcrypt($data['password']);
         }
 
         $user->update($data);

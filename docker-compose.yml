@@ -41,13 +41,7 @@ services:
       - node
     entrypoint: ["/usr/local/bin/entrypoint.sh"]
     volumes:
-    - ./php/app:/var/www/html/app
-    - ./php/routes:/var/www/html/routes
-    - ./php/resources:/var/www/html/resources
-    - ./php/database:/var/www/html/database
-    - ./php/public:/var/www/html/public
-    - ./php/.env:/var/www/html/.env
-
+      - ./php:/var/www/html
     environment:
       DB_HOST: postgres
       DB_PORT: 5432

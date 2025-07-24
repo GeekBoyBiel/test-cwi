@@ -139,10 +139,33 @@
             validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
             oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
 
+            // ✅ Intercepta requisições para forçar headers JSON
             requestInterceptor: function(request) {
                 request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
                 request.headers['Accept'] = 'application/json';
+                request.headers['Content-Type'] = 'application/json';
                 return request;
+            },
+
+            // ✅ Intercepta respostas HTML e transforma em erro
+            responseInterceptor: function (response) {
+                if (
+                    response.status === 200 &&
+                    typeof response.body === 'string' &&
+                    response.body.includes('<!DOCTYPE html>')
+                ) {
+                    return {
+                        ok: false,
+                        status: 500,
+                        statusText: "Erro inesperado: resposta HTML",
+                        body: {
+                            message: "A resposta retornou HTML, provavelmente por erro não tratado.",
+                        },
+                        headers: response.headers,
+                        url: response.url
+                    };
+                }
+                return response;
             },
 
             presets: [
@@ -160,14 +183,14 @@
             filter: {!! config('l5-swagger.defaults.ui.display.filter') ? 'true' : 'false' !!},
             persistAuthorization: "{!! config('l5-swagger.defaults.ui.authorization.persist_authorization') ? 'true' : 'false' !!}",
 
-        })
+        });
 
-        window.ui = ui
+        window.ui = ui;
 
         @if(in_array('oauth2', array_column(config('l5-swagger.defaults.securityDefinitions.securitySchemes'), 'type')))
         ui.initOAuth({
             usePkceWithAuthorizationCodeGrant: "{!! (bool)config('l5-swagger.defaults.ui.authorization.oauth2.use_pkce_with_authorization_code_grant') !!}"
-        })
+        });
         @endif
     }
 </script>

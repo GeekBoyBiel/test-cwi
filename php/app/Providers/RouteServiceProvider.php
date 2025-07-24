@@ -21,9 +21,11 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->routes(function () {
             Route::middleware('api')
-                ->prefix('')
+                ->as('') // remove prefixo de nomeação
+                ->prefix('/') // prefixo vazio
                 ->group(base_path('routes/api.php'));
         });
+
     }
 
     protected function configureRateLimiting(): void
